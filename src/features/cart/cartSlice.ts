@@ -3,8 +3,9 @@ import { RootState, AppThunk } from '../../app/store';
 import { cartItemsState } from '../../types/cartTypes';
 import { fetchCart } from './cartAPI';
 
-const initialState: {value: cartItemsState[]} = {
-  value: []
+const initialState: {value: cartItemsState[], total: number} = {
+  value: [],
+  total: 0
 }
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -22,6 +23,10 @@ export const getCartAsync = createAsyncThunk(
   }
 );
 
+const getTotal = (value: cartItemsState[]) => {
+  return value.map(x => x.price * x.quantity).reduce((a: number, b:number) => a + b, 0)
+}
+
 export const cartSlice = createSlice({
   name: 'cart',
   initialState,
@@ -38,18 +43,20 @@ export const cartSlice = createSlice({
         }
         return cart_item
       })
+      state.total = getTotal(state.value)
     },
     decrement: (state, action) => {
-      console.log('am i reached?')
       state.value = state.value.map(cart_item => {
         if (cart_item.id === action.payload.id && cart_item.quantity > 1) {
           cart_item.quantity -= 1
         }
         return cart_item
       })
+      state.total = getTotal(state.value)
     },
     remove: (state, action) => {
       state.value = state.value.filter(cart_item => cart_item.id !== action.payload.id)
+      state.total = getTotal(state.value)
     }
   },
   // The `extraReducers` field lets the slice handle actions defined elsewhere,
@@ -61,6 +68,7 @@ export const cartSlice = createSlice({
       })
       .addCase(getCartAsync.fulfilled, (state, action) => {
         state.value = action.payload
+        state.total = getTotal(state.value)
       })
       .addCase(getCartAsync.rejected, (state) => {
         // state.status = 'failed';
@@ -74,6 +82,7 @@ export const { increment, decrement, remove } = cartSlice.actions;
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
 export const selectCart = (state: RootState) => state.cart.value;
+export const cartTotal = (state: RootState) => state.cart.total;
 
 // We can also write thunks by hand, which may contain both sync and async logic.
 // Here's an example of conditionally dispatching actions based on current state.

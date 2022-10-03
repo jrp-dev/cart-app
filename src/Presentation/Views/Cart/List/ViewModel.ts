@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../app/hooks';
-import { decrement, increment, remove, selectCart } from '../../../../features/cart/cartSlice';
+import { decrement, increment, remove, selectCart, cartTotal } from '../../../../features/cart/cartSlice';
 import { cartItemsState } from '../../../../types/cartTypes';
 
 export default function CartListViewModel() {
 
     const cartItems = useAppSelector(selectCart);
+    const total = useAppSelector(cartTotal);
     const dispatch = useAppDispatch();
 
     const incrementCart = (item: cartItemsState) => {
@@ -25,5 +27,6 @@ export default function CartListViewModel() {
         decrementCart,
         incrementCart,
         removeCart,
+        total
     }
 }
